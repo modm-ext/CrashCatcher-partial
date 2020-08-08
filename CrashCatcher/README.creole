@@ -29,6 +29,10 @@ to be used with CrashDebug can be found [[https://github.com/adamgreen/CrashDebu
 
 
 == How it Works
+In addition to the documentation below you can also check out
+[[http://www.cyrilfougeray.com/2020/07/27/firmware-logs-with-stack-trace.html | Cyril Fougeray's great blog post]]
+where he describes using the CrashCatcher library as a part of his logging solution.
+
 === Catching the Hard Fault
 A typical CMSIS based build system for Cortex-M parts will have a hard fault interrupt vector which calls a function
 with the following prototype:
