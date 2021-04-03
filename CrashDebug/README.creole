@@ -111,11 +111,11 @@ of the memory map to the user.  The following shows an example of what you might
 {{{
 (gdb) info mem
 Using memory regions provided by the target.
-Num Enb Low Addr   High Addr  Attrs 
-0   y  	0x00000000 0x00010000 flash blocksize 0x1000 nocache 
-1   y  	0x00010000 0x00080000 flash blocksize 0x8000 nocache 
-2   y  	0x10000000 0x10008000 rw nocache 
-3   y  	0x2007c000 0x20084000 rw nocache 
+Num Enb Low Addr   High Addr  Attrs
+0   y  	0x00000000 0x00010000 flash blocksize 0x1000 nocache
+1   y  	0x00010000 0x00080000 flash blocksize 0x8000 nocache
+2   y  	0x10000000 0x10008000 rw nocache
+3   y  	0x2007c000 0x20084000 rw nocache
 }}}
 In the above example, the first two regions are for read-only FLASH so we can ignore those as their contents can already
 be found in the **.elf**.  The next two regions, **0x10000000 to 0x10008000** and ** 0x2007c000 to 0x20084000**, are the
