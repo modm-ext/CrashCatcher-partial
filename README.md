@@ -16,9 +16,7 @@ The following paths are extracted:
 - `CrashDebug/README.creole`
 - `CrashDebug/bins/`
 
-More paths may be added in the future.
-
-This repository is updated monthly by TravisCI.
+This repository is updated periodically by GitHub Actions.
 
 ## Licenses
 
