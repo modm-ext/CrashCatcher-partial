@@ -20,10 +20,6 @@
 #include <stdlib.h>
 
 
-#define TRUE  1
-#define FALSE 0
-
-
 /* The crash dump start with a four byte header.  The first two bytes are "cC", the third byte is the major version
    number, and the fourth bytes is the minor version number. */
 #define CRASH_CATCHER_SIGNATURE_BYTE0 'c'
