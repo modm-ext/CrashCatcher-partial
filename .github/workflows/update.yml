@@ -18,6 +18,17 @@ jobs:
       - name: Run update.py script
         run: |
           python3 update.py
+      - name: Test CrashDebug executable
+        shell: python
+        run: |
+          import subprocess
+          import sys
+          p = subprocess.run("CrashDebug/bins/lin64/CrashDebug", capture_output=True)
+          print(p.stderr)
+          print("Return code: {}".format(p.returncode))
+          if (p.returncode != 255) or ("CrashDebug - Cortex-M Post-Mortem Debugging" not in str(p.stderr)):
+            print("Unexpected return code or stderr")
+            sys.exit(1)
       - name: Git push
         run: |
           git push origin master

@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
+
 # Script is tested on OS X 10.12
 # YOUR MILEAGE MAY VARY
 
 import sys
 import shutil
-import fnmatch
+import os
 import subprocess
 from pathlib import Path
 
@@ -36,10 +38,15 @@ for repo in source_paths:
             dest = Path(repo) / path.relative_to(f"{repo}_src")
             dest.parent.mkdir(parents=True, exist_ok=True)
             print(dest)
-            # Copy, normalize newline and remove trailing whitespace
-            with path.open("r", newline=None, encoding="utf-8", errors="replace") as rfile, \
-                               dest.open("w", encoding="utf-8") as wfile:
-                wfile.writelines(l.rstrip()+"\n" for l in rfile.readlines())
+            from pprint import pprint
+            pprint(path)
+            if os.access(path, os.X_OK) or str(path).endswith(".exe"):
+                shutil.copy2(path, dest)
+            else:
+                # Copy, normalize newline and remove trailing whitespace
+                with path.open("r", newline=None, encoding="utf-8", errors="replace") as rfile, \
+                                dest.open("w", encoding="utf-8") as wfile:
+                    wfile.writelines(l.rstrip()+"\n" for l in rfile.readlines())
 
 subprocess.run("git add CrashCatcher CrashDebug", shell=True)
 if subprocess.call("git diff-index --quiet HEAD --", shell=True):
