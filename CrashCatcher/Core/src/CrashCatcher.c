@@ -1,4 +1,4 @@
-/* Copyright (C) 2018  Adam Green (https://github.com/adamgreen)
+/* Copyright (C) 2022  Adam Green (https://github.com/adamgreen)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ CRASH_CATCHER_TEST_WRITEABLE uint64_t g_crashCatcherTestBaseAddress;
 CRASH_CATCHER_TEST_WRITEABLE uint32_t* g_pCrashCatcherCpuId = (uint32_t*)0xE000ED00;
 
 /* The unit tests can point the core to a fake location for the fault status registers. */
-CRASH_CATCHER_TEST_WRITEABLE uint32_t* g_pCrashCatcherFaultStatusRegisters = (uint32_t*)0xE000ED28;
+CRASH_CATCHER_TEST_WRITEABLE FaultStatusRegisters* g_pCrashCatcherFaultStatusRegisters = (FaultStatusRegisters*)0xE000ED28;
 
 /* The unit tests can point the core to a fake location for the Coprocessor Access Control Register. */
 CRASH_CATCHER_TEST_WRITEABLE uint32_t* g_pCrashCatcherCoprocessorAccessControlRegister = (uint32_t*)0xE000ED88;
@@ -54,6 +54,7 @@ static void initFloatingPointFlag(Object* pObject);
 static int areFloatingPointCoprocessorsEnabled(void);
 static void initIsBKPT(Object* pObject);
 static int isBKPT(uint16_t instruction);
+static int isBadPC();
 static void setStackSentinel(void);
 static void dumpSignature(void);
 static void dumpFlags(const Object* pObject);
@@ -160,14 +161,31 @@ static int areFloatingPointCoprocessorsEnabled(void)
 
 static void initIsBKPT(Object* pObject)
 {
-    const uint16_t* pInstruction = uint32AddressToPointer(pObject->pSP->pc);
-
-    pObject->info.isBKPT = isBKPT(*pInstruction);
+    /* On ARMv7M, can use fault status registers to determine if bad PC was cause of fault before checking to see if
+       it points to a BKPT instruction. */
+    if (CRASH_CATCHER_ISBKPT_SUPPORT && (isARMv6MDevice() || !isBadPC()))
+    {
+        const uint16_t* pInstruction = uint32AddressToPointer(pObject->pSP->pc);
+        pObject->info.isBKPT = isBKPT(*pInstruction);
+    }
+    else
+    {
+        pObject->info.isBKPT = 0;
+    }
 }
 
 static int isBKPT(uint16_t instruction)
 {
     return (instruction & 0xFF00) == 0xBE00;
+}
+
+static int isBadPC()
+{
+    const uint32_t IACCVIOL = 1 << 0;
+    const uint32_t IBUSERR = 1 << 8;
+    const uint32_t badPCFaultBits = IACCVIOL | IBUSERR;
+
+    return g_pCrashCatcherFaultStatusRegisters->CFSR & badPCFaultBits;
 }
 
 static void setStackSentinel(void)
@@ -272,7 +290,7 @@ static void dumpFaultStatusRegisters(void)
 {
     uint32_t                 faultStatusRegistersAddress = (uint32_t)(unsigned long)g_pCrashCatcherFaultStatusRegisters;
     CrashCatcherMemoryRegion faultStatusRegion[] = { {faultStatusRegistersAddress,
-                                                      faultStatusRegistersAddress + 5 * sizeof(uint32_t),
+                                                      faultStatusRegistersAddress + sizeof(FaultStatusRegisters),
                                                       CRASH_CATCHER_WORD},
                                                      {0xFFFFFFFF, 0xFFFFFFFF, CRASH_CATCHER_BYTE} };
     dumpMemoryRegions(faultStatusRegion);
