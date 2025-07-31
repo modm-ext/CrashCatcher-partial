@@ -8,17 +8,21 @@ on:
 
 jobs:
   update:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Configure Git
         run: |
           git config --global user.email "bot@modm.io"
           git config --global user.name "modm update bot"
-      - name: Run update.py script
+      - name: Update repository
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          python3 update.py
+          wget -qL https://raw.githubusercontent.com/modm-ext/partial/main/partial.py
+          python3 partial.py -v --head --dest CrashCatcher adamgreen/CrashCatcher README.creole include/CrashCatcher.h "Core/src/**/*"
+          python3 partial.py -v --head --bin --dest CrashDebug adamgreen/CrashDebug README.creole "bins/**/*"
       - name: Test CrashDebug executable
         shell: python
         run: |
@@ -31,6 +35,6 @@ jobs:
             print("Unexpected return code or stderr")
             sys.exit(1)
       - name: Git push
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         run: |
-          git push origin master
+          git push origin main
